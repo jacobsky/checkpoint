@@ -1,0 +1,23 @@
+package comments
+
+templ MessagePost(name, message string) {
+	<article>
+		<p>{ message }</p>
+		<footer>{ name } was here</footer>
+	</article>
+}
+
+templ MessageBoard() {
+	<section>
+		<header>
+			<h1>Leave a message for your fellow travelers</h1>
+		</header>
+		<div class="grid">
+			<div>
+				@MessagePost("An anonymous traveled", "I was here. At some point.")
+				@MessagePost("A student", "I was here. At some point.")
+				@MessagePost("A corporate worker", "I was here. At some point.")
+			</div>
+		</div>
+	</section>
+}

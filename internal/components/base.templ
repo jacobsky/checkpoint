@@ -1,5 +1,10 @@
 package components
 
+import (
+	"checkpoint/internal/components/chat"
+	"checkpoint/internal/components/comments"
+)
+
 templ Base() {
 	<!DOCTYPE html>
 	<html lang="en">
@@ -8,7 +13,7 @@ templ Base() {
 			<meta name="viewport" content="width=device-width,initial-scale=1"/>
 			<title>Checkpoint</title>
 			<link rel="stylesheet" href="/assets/css/pico.min.css"/>
-			<script src="/assets/js/datastar.js"></script>
+			<script type="module" src="/assets/js/datastar.js"></script>
 		</head>
 		<body>
 			<main class="container">
@@ -23,21 +28,9 @@ templ Layout() {
 		<section>
 			<h1>Checkpoint!</h1>
 			<p>Stay a while, enjoy your time around the campfire. Share your stories, if you like.</p>
-			<aside>
-				<h1>TODO: Live Chat (powered by Datastar)</h1>
-				<p>chat message</p>
-				<p>chat message</p>
-				<p>chat message</p>
-				<p>chat message</p>
-			</aside>
 		</section>
+		@chat.ChatBox()
 		<!-- <audio></audio>-->
-		<section>
-			<h1>TODO: Comments section!</h1>
-			<p>Comment! </p>
-			<p>Comment! </p>
-			<p>Comment! </p>
-			<p>Comment! </p>
-		</section>
+		@comments.MessageBoard()
 	}
 }

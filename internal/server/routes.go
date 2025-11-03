@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"checkpoint/internal/components"
+	"checkpoint/internal/components/chat"
+	"checkpoint/internal/components/comments"
 
 	"github.com/a-h/templ"
 )
@@ -14,6 +16,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 	// Register routes
 
 	// mux.HandleFunc("/health", s.healthHandler)
+	chat.RegisterRoutes(mux)
+	comments.RegisterRoutes(mux)
 
 	fileServer := http.FileServer(http.FS(Files))
 	mux.Handle("/assets/", fileServer)

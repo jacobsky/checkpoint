@@ -1,0 +1,12 @@
+package components
+
+import "net/http"
+
+templ ErrorCard(status int, details string) {
+	<article id="errormessage">
+		<header>
+			<h1>Error { status } : { http.StatusText(status) }</h1>
+		</header>
+		<p>{ details }</p>
+	</article>
+}

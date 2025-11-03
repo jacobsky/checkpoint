@@ -1,0 +1,16 @@
+package chat
+
+templ ChatMessage(userid, message string) {
+	<p><strong>{ userid }: </strong> { message }</p>
+}
+
+templ ChatBox() {
+	<header>
+		<h1>Checkpoint</h1>
+	</header>
+	<section>
+		@ChatMessage("User A", "Says thing")
+		@ChatMessage("User B", "Says Says other things")
+		@ChatMessage("User C", "Says yet another thing")
+	</section>
+}
