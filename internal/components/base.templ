@@ -20,14 +20,14 @@ templ Base() {
 
 templ UserJoin() {
 	<p>Tell us your name, come and take a seat and chat</p>
-	<div role="group" data-signals:joined data-show="!$joined">
+	<div role="group">
 		<input
 			type="text"
 			data-bind:nickname
 			data-text="$nickname"
-			data-on:keydown="evt.key === 'Enter' && ($joined=true) && @get('/join')"
+			data-on:keydown="evt.key === 'Enter' && @get('/join')"
 		/>
-		<button data-on:click="$joined=true && @get('/join')">Join</button>
+		<button data-on:click="@get('/join')">Join</button>
 	</div>
 }
 
