@@ -1,10 +1,5 @@
 package components
 
-import (
-	"checkpoint/internal/components/chat"
-	"checkpoint/internal/components/comments"
-)
-
 templ Base() {
 	<!DOCTYPE html>
 	<html lang="en">
@@ -23,14 +18,30 @@ templ Base() {
 	</html>
 }
 
+templ UserJoin() {
+	<p>Tell us your name, come and take a seat and chat</p>
+	<div role="group" data-signals:joined data-show="!$joined">
+		<input
+			type="text"
+			data-bind:nickname
+			data-text="$nickname"
+			data-on:keydown="evt.key === 'Enter' && ($joined=true) && @get('/join')"
+		/>
+		<button data-on:click="$joined=true && @get('/join')">Join</button>
+	</div>
+}
+
 templ Layout() {
 	@Base() {
 		<section>
 			<h1>Checkpoint!</h1>
 			<p>Stay a while, enjoy your time around the campfire. Share your stories, if you like.</p>
 		</section>
-		@chat.ChatBox()
+		<section id="main">
+			@UserJoin()
+		</section>
 		<!-- <audio></audio>-->
-		@comments.MessageBoard()
+		// TODO: Re-enable after chat functionality works
+		// @comments.MessageBoard()
 	}
 }

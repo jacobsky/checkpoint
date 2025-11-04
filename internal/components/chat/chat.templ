@@ -6,11 +6,35 @@ templ ChatMessage(userid, message string) {
 
 templ ChatBox() {
 	<header>
-		<h1>Checkpoint</h1>
+		<h1>Live Chat</h1>
 	</header>
+	@ChatBoxMessages(nil)
+	@SubmitMessage()
+}
+
+templ ChatBoxMessages(messages []Message) {
+	<section id="chatboard" data-init="@get('/chat')" style="height: 500px" class="overflow-auto">
+		if messages != nil {
+			for _, message := range messages {
+				@ChatMessage(message.Nickname, message.Message)
+			}
+		} else {
+			<div aria-busy="true">Loading Messages</div>
+		}
+		<div style="overflow-anchor: auto; height: 1px;"></div>
+	</section>
+}
+
+templ SubmitMessage() {
 	<section>
-		@ChatMessage("User A", "Says thing")
-		@ChatMessage("User B", "Says Says other things")
-		@ChatMessage("User C", "Says yet another thing")
+		<div role="group">
+			<input
+				type="text"
+				data-bind:message
+				data-text="$message"
+				data-on:keydown="evt.key === 'Enter' && @post('/chat')"
+			/>
+			<button data-on:click="@post('/chat')">Send</button>
+		</div>
 	</section>
 }
