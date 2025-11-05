@@ -17,7 +17,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	// mux.HandleFunc("/health", s.healthHandler)
 	chat.RegisterRoutes(mux)
-	comments.RegisterRoutes(mux)
+	mux.Handle("/comments", comments.NewHandler(s.db))
 
 	fileServer := http.FileServer(http.FS(Files))
 	mux.Handle("/assets/", fileServer)

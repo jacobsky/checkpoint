@@ -1,39 +1,27 @@
 package comments
 
 import (
-	components "checkpoint/internal/components/util"
+	sqlc "checkpoint/internal/db"
+	"database/sql"
 	"net/http"
-
-	"github.com/starfederation/datastar-go/datastar"
 )
 
-type Message struct {
+type frontendSignals struct {
 	Nickname string `json:"nickname"`
 	Message  string `json:"message"`
 }
-
-func RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("GET /message", chat)
-	// mux.HandleFunc("POST /message", postMessage)
+type Handler struct {
+	db      *sql.DB
+	queries *sqlc.Queries
 }
 
-func chat(w http.ResponseWriter, r *http.Request) {
-	sse := datastar.NewSSE(w, r)
-	err := sse.PatchElementTempl(MessageBoard())
-	if err != nil {
-		components.InternalError(sse, w, err)
+func NewHandler(db *sql.DB) *Handler {
+	return &Handler{
+		db:      db,
+		queries: sqlc.New(db),
 	}
 }
 
-// func postMessage(w http.ResponseWriter, r *http.Request) {
-// 	store := &Message{}
-// 	err := datastar.ReadSignals(r, store)
-//
-// 	sse := datastar.NewSSE(w, r)
-//
-// 	if err != nil {
-// 		components.InternalError(sse, w, err)
-// 		return
-// 	}
-//
-// }
+func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/", http.StatusMovedPermanently)
+}
