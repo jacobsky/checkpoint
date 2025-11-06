@@ -20,11 +20,12 @@ templ-install:
 build: templ-install
 	@echo "Building..."
 	@templ generate
-	
+	@sqlc generate
 	@CGO_ENABLED=1 GOOS=linux go build -o main cmd/api/main.go
 
 # Run the application
 run:
+	@migrate -source file://migrations -database sqlite3://checkpoint.db up
 	@go run cmd/api/main.go
 # Create DB container
 docker-run:

@@ -14,10 +14,11 @@ func (s *Server) RegisterRoutes() http.Handler {
 	mux := http.NewServeMux()
 
 	// Register routes
-
+	// TODO add in health check
 	// mux.HandleFunc("/health", s.healthHandler)
+	components.RegisterRoutes(mux)
 	chat.RegisterRoutes(mux)
-	mux.Handle("/comments", comments.NewHandler(s.db))
+	mux.Handle("/messages", comments.NewHandler(s.db))
 
 	fileServer := http.FileServer(http.FS(Files))
 	mux.Handle("/assets/", fileServer)
@@ -44,15 +45,3 @@ func (s *Server) corsMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
-
-// func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
-// 	resp, err := json.Marshal(s.db.Health())
-// 	if err != nil {
-// 		http.Error(w, "Failed to marshal health check response", http.StatusInternalServerError)
-// 		return
-// 	}
-// 	w.Header().Set("Content-Type", "application/json")
-// 	if _, err := w.Write(resp); err != nil {
-// 		log.Printf("Failed to write response: %v", err)
-// 	}
-// }

@@ -1,23 +1,41 @@
 package comments
 
-templ MessagePost(name, message string) {
+import sqlc "checkpoint/internal/db"
+
+templ MessagePost(comment sqlc.Comment) {
 	<article>
-		<p>{ message }</p>
-		<footer>{ name } was here</footer>
+		<p>{ comment.Message } </p>
+		<footer><strong>{ comment.Poster }</strong> was here @ { comment.Postdate.Format("2006-01-02") }</footer>
 	</article>
 }
 
-templ MessageBoard() {
+templ MessagePostGroup(messages []sqlc.Comment) {
+	if messages != nil {
+		for _, msg := range messages {
+			@MessagePost(msg)
+		}
+	}
+}
+
+templ MessageBoard(messages []sqlc.Comment) {
 	<section>
 		<header>
-			<h1>Leave a message for your fellow travelers</h1>
+			<h1>Message Wall</h1>
 		</header>
-		<div class="grid">
-			<div>
-				@MessagePost("An anonymous traveled", "I was here. At some point.")
-				@MessagePost("A student", "I was here. At some point.")
-				@MessagePost("A corporate worker", "I was here. At some point.")
+		<div data-init="@get('/messages')" class="grid">
+			<div id="messageboard">
+				@MessagePostGroup(messages)
 			</div>
+		</div>
+		@SubmitMessage()
+	</section>
+}
+
+templ SubmitMessage() {
+	<section>
+		<div role="group">
+			<input type="text" data-bind:wall_message data-text="$wall_message"/>
+			<button data-on:click="@post('/messages')">Send</button>
 		</div>
 	</section>
 }

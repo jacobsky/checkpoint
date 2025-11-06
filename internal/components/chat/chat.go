@@ -1,7 +1,7 @@
 package chat
 
 import (
-	components "checkpoint/internal/components/util"
+	"checkpoint/internal/components/util"
 	"log/slog"
 	"net/http"
 	"time"
@@ -10,7 +10,6 @@ import (
 )
 
 const (
-	maincontent         = "main"
 	chatselector        = "chatboard"
 	channelBuffer       = 10
 	maxRetainedMessages = 10
@@ -92,17 +91,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("GET /join", join)
 	mux.Handle("/chat", newHandler())
-}
-
-func join(w http.ResponseWriter, r *http.Request) {
-	slog.Info("User joined")
-	sse := datastar.NewSSE(w, r)
-	err := sse.PatchElementTempl(ChatBox(), datastar.WithSelectorID(maincontent))
-	if err != nil {
-		components.InternalError(sse, w, err)
-	}
 }
 
 // Note: Due to the way that the handlers work, when there is a disconnection, the entire state of the chat history is sent to the chat.
@@ -123,7 +112,7 @@ func (h *handler) chat(w http.ResponseWriter, r *http.Request) {
 	// We load the ephemeral message history
 	err = sse.PatchElementTempl(ChatBoxMessages(h.messageHistory))
 	if err != nil {
-		components.InternalError(sse, w, err)
+		util.InternalError(sse, w, err)
 	}
 
 	listener := make(chan Message)
@@ -137,14 +126,14 @@ func (h *handler) chat(w http.ResponseWriter, r *http.Request) {
 			h.delRx <- listener
 			return
 		case msg := <-listener:
-			err := sse.PatchElementTempl(ChatMessage(msg.Nickname, msg.Message), datastar.WithSelectorID(chatselector), datastar.WithModeAppend())
+			err := sse.PatchElementTempl(ChatMessage(msg.Nickname, msg.Message, msg.TimePosted), datastar.WithSelectorID(chatselector), datastar.WithModeAppend())
 			if err != nil {
 				slog.Error("Error occurred when patching", "error", err)
 			}
 			slog.Info("signals after", "chatsignals", store)
 			err = sse.MarshalAndPatchSignals(store)
 			if err != nil {
-				components.InternalError(sse, w, err)
+				util.InternalError(sse, w, err)
 			}
 		}
 	}
@@ -157,7 +146,7 @@ func (h *handler) postMessage(w http.ResponseWriter, r *http.Request) {
 
 	sse := datastar.NewSSE(w, r)
 	if err != nil {
-		components.InternalError(sse, w, err)
+		util.InternalError(sse, w, err)
 		return
 	}
 

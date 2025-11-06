@@ -1,18 +1,17 @@
 -- name: GetRecentComments :many
-SELECT
-    *
-FROM
+SELECT * FROM
     comments
-ORDER BY
-    DATEDESC
-LIMIT ?;
--- name: AddComment :exec
+ORDER BY postdate DESC
+LIMIT ?
+OFFSET ?;
+-- name: AddComment :one
 INSERT INTO comments(
     postdate,
     pinned,
     poster,
     message
-)VALUES( ?, FALSE, ?, ?);
+)VALUES( ?, FALSE, ?, ?)
+RETURNING *;
 -- name: AddPinnedComment :exec
 INSERT INTO comments(
     postdate,

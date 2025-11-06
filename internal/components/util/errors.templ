@@ -1,12 +1,16 @@
-package components
+package util
 
-import "net/http"
-
-templ ErrorCard(status int, details string) {
-	<article id="errormessage">
-		<header>
-			<h1>Error { status } : { http.StatusText(status) }</h1>
-		</header>
-		<p>{ details }</p>
-	</article>
+templ ErrorModal() {
+	<dialog data-signals="{show_error: false, error: '', error_details: ''}" data-attr:open="$show_error">
+		<article>
+			<header>
+				<button aria-label="Close" rel="prev" data-on:click="$show_error=false"></button>
+				<p data-text="$error"></p>
+			</header>
+			<details>
+				<summary>Details</summary>
+				<p data-text="$error_details"></p>
+			</details>
+		</article>
+	</dialog>
 }

@@ -1,4 +1,4 @@
-package components
+package util
 
 import (
 	"fmt"
@@ -7,6 +7,12 @@ import (
 
 	"github.com/starfederation/datastar-go/datastar"
 )
+
+type dsSignals struct {
+	ShowError    bool   `json:"show_error"`
+	Error        string `json:"error"`
+	ErrorDetails string `json:"error_details"`
+}
 
 func InternalError(sse *datastar.ServerSentEventGenerator, w http.ResponseWriter, err error) {
 	slog.Error("Internal Server Error", "error", err)
@@ -24,8 +30,11 @@ func SignalErrorToPatch(sse *datastar.ServerSentEventGenerator, w http.ResponseW
 		slog.Warn("Incorrect usage of this function")
 		return
 	}
-
-	err = sse.PatchElementTempl(ErrorCard(code, err.Error()))
+	err = sse.MarshalAndPatchSignals(dsSignals{
+		ShowError:    true,
+		Error:        http.StatusText(code),
+		ErrorDetails: err.Error(),
+	})
 	if err != nil {
 		slog.Error("datastar error", "error", err)
 		http.Error(w, "an internal error has occured, please refer to the server logs to troubleshoot", http.StatusInternalServerError)
