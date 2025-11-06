@@ -1,22 +1,28 @@
 package chat
 
-templ ChatMessage(userid, message string) {
-	<p><strong>{ userid }: </strong> { message }</p>
+import "time"
+
+templ ChatMessage(userid, message string, posttime time.Time) {
+	<div role="group">
+		<p><strong>{ userid }: </strong> { message }</p>
+		<p>{ posttime.Format("2006-01-02 15:04:05") }</p>
+	</div>
 }
 
 templ ChatBox() {
 	<header>
-		<h1>Live Chat</h1>
+		<h1>Ephemeral Chat</h1>
+		<p>Stay a while and chat. Only the { maxRetainedMessages } latest messages will be available.</p>
 	</header>
 	@ChatBoxMessages(nil)
 	@SubmitMessage()
 }
 
 templ ChatBoxMessages(messages []Message) {
-	<section id="chatboard" data-init="@get('/chat')" style="height: 500px" class="overflow-auto">
+	<section id="chatboard" data-init__delay.1s="@get('/chat')" style="height: 500px" class="overflow-auto">
 		if messages != nil {
 			for _, message := range messages {
-				@ChatMessage(message.Nickname, message.Message)
+				@ChatMessage(message.Nickname, message.Message, message.TimePosted)
 			}
 		} else {
 			<div aria-busy="true">Loading Messages</div>

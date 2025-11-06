@@ -4,6 +4,7 @@ import (
 	components "checkpoint/internal/components/util"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/starfederation/datastar-go/datastar"
 )
@@ -15,27 +16,33 @@ const (
 	maxRetainedMessages = 10
 )
 
-type Message struct {
+type dsSignals struct {
 	Nickname string `json:"nickname"`
 	Message  string `json:"message"`
 }
 
+type Message struct {
+	TimePosted time.Time `json:"time_posted"`
+	Nickname   string    `json:"nickname"`
+	Message    string    `json:"message"`
+}
+
 type handler struct {
 	// Note probably need some kind of mutex lock or channel for modifying things internally
-	message_store []Message
-	tx            chan Message
-	rx            []chan Message
-	addRx         chan chan Message
-	delRx         chan (<-chan Message)
+	messageHistory []Message
+	tx             chan Message
+	rx             []chan Message
+	addRx          chan chan Message
+	delRx          chan (<-chan Message)
 }
 
 func newHandler() *handler {
 	h := &handler{
-		message_store: []Message{},
-		tx:            make(chan Message, channelBuffer),
-		rx:            make([]chan Message, 0),
-		addRx:         make(chan chan Message, channelBuffer),
-		delRx:         make(chan (<-chan Message), channelBuffer),
+		messageHistory: []Message{},
+		tx:             make(chan Message, channelBuffer),
+		rx:             make([]chan Message, 0),
+		addRx:          make(chan chan Message, channelBuffer),
+		delRx:          make(chan (<-chan Message), channelBuffer),
 	}
 	go h.serve()
 	return h
@@ -46,6 +53,11 @@ func (h *handler) serve() {
 	for {
 		select {
 		case msg := <-h.tx:
+			if messageLength := len(h.messageHistory); messageLength > maxRetainedMessages {
+				h.messageHistory = append(h.messageHistory[1:], msg)
+			} else {
+				h.messageHistory = append(h.messageHistory, msg)
+			}
 			slog.Info("Sending message", "message", msg, "active connections", len(h.rx))
 			for i, rx := range h.rx {
 				slog.Debug("broadcasting", "rxid", i)
@@ -79,15 +91,6 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *handler) pushMessage(message Message) {
-	if messageLength := len(h.message_store); messageLength > maxRetainedMessages {
-		h.message_store = append(h.message_store[1:], message)
-	} else {
-		h.message_store = append(h.message_store, message)
-	}
-	h.tx <- message
-}
-
 func RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /join", join)
 	mux.Handle("/chat", newHandler())
@@ -107,27 +110,30 @@ func join(w http.ResponseWriter, r *http.Request) {
 // It's a checkpoint, not a hangout spot.
 // There is a board for leaving a messages in internal/components/comments
 func (h *handler) chat(w http.ResponseWriter, r *http.Request) {
-	var store Message
+	var store dsSignals
 	err := datastar.ReadSignals(r, &store)
 	if err != nil {
 		slog.Error("datastar error occurred", "error", err)
 	}
 
-	slog.Info("Chat Connected", "user", store.Nickname)
+	slog.Debug("Chat Connected", "user", store.Nickname)
 	sse := datastar.NewSSE(w, r)
 
-	err = sse.PatchElementTempl(ChatBoxMessages(h.message_store))
-
+	slog.Debug("signals", "chatsignals", store)
+	// We load the ephemeral message history
+	err = sse.PatchElementTempl(ChatBoxMessages(h.messageHistory))
 	if err != nil {
 		components.InternalError(sse, w, err)
 	}
+
 	listener := make(chan Message)
 	h.addRx <- listener
 	// Keep the context open until the connection closes (detectable via the request context)
 	for {
 		select {
 		case <-sse.Context().Done():
-			slog.Info("Chat disconnected", "user", store.Nickname)
+			slog.Info("Chat disconnected", "user", store.Nickname, "time", time.Now())
+
 			h.delRx <- listener
 			return
 		case msg := <-listener:
@@ -135,13 +141,18 @@ func (h *handler) chat(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				slog.Error("Error occurred when patching", "error", err)
 			}
+			slog.Info("signals after", "chatsignals", store)
+			err = sse.MarshalAndPatchSignals(store)
+			if err != nil {
+				components.InternalError(sse, w, err)
+			}
 		}
 	}
 }
 
 // Post a new message that will be polled
 func (h *handler) postMessage(w http.ResponseWriter, r *http.Request) {
-	store := &Message{}
+	store := &dsSignals{}
 	err := datastar.ReadSignals(r, store)
 
 	sse := datastar.NewSSE(w, r)
@@ -150,13 +161,16 @@ func (h *handler) postMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	message := Message{store.Nickname, store.Message}
-	h.pushMessage(message)
+	message := Message{
+		time.Now(),
+		store.Nickname,
+		store.Message,
+	}
+	slog.Info("message ingested", "message", message)
 	// Do something to indicate that there is a new message
-	store.Message = ""
-
-	err = sse.MarshalAndPatchSignals(&store)
+	err = sse.PatchSignals([]byte(`{message: ''}`))
 	if err != nil {
 		slog.Error("Patch Element Error", "message", err)
 	}
+	h.tx <- message
 }
