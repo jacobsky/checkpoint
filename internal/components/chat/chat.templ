@@ -11,7 +11,10 @@ templ ChatMessage(userid, message string, posttime time.Time) {
 
 templ ChatBox() {
 	<header>
-		<h1>Ephemeral Chat</h1>
+		<div role="group">
+			<h1>Ephemeral Chat</h1>
+			<button aria-label="Close" rel="prev" data-on:click="@get('/join')"></button>
+		</div>
 		<p>Stay a while and chat. Only the { maxRetainedMessages } latest messages will be available.</p>
 	</header>
 	@ChatBoxMessages(nil)

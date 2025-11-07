@@ -20,7 +20,10 @@ templ MessagePostGroup(messages []sqlc.Comment) {
 templ MessageBoard(messages []sqlc.Comment) {
 	<section>
 		<header>
-			<h1>Message Wall</h1>
+			<div role="group">
+				<h1>Message Wall</h1>
+				<button aria-label="Close" rel="prev" data-on:click="@get('/join')">Return</button>
+			</div>
 		</header>
 		<div data-init="@get('/messages')" class="grid">
 			<div id="messageboard">

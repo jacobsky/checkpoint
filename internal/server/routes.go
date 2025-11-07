@@ -6,8 +6,6 @@ import (
 	"checkpoint/internal/components"
 	"checkpoint/internal/components/chat"
 	"checkpoint/internal/components/comments"
-
-	"github.com/a-h/templ"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
@@ -22,7 +20,6 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	fileServer := http.FileServer(http.FS(Files))
 	mux.Handle("/assets/", fileServer)
-	mux.Handle("/", templ.Handler(components.Layout()))
 	// Wrap the mux with CORS middleware
 	return s.corsMiddleware(mux)
 }

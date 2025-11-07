@@ -41,11 +41,6 @@ templ Base() {
 						</li>
 					</ul>
 				</nav>
-				<p>
-					Hello! Welcome <strong></strong>! I hope you enjoy your time around
-					the campfire. Share
-					your stories, if you like.
-				</p>
 			</header>
 			<main class="container">
 				{ children... }
@@ -67,18 +62,43 @@ templ UserJoin() {
 	</div>
 }
 
-templ SplitLayout() {
-	<div class="grid">
-		<div>
-			@comments.MessageBoard(nil)
-		</div>
-		<div>
-			@chat.ChatBox()
-		</div>
-	</div>
+templ MainContent() {
+	@Base() {
+		<section id="main">
+			<div class="grid">
+				<div>
+					This is a small space that I made dedicated to one of my favorite pieces of internet culture referred to as
+					the
+					Internet Checkpoint. If you stumbled your way here, I would greatly appreciate if you would leave a comment
+					or
+					message.
+				</div>
+				<div>
+					<button data-on:click="@get('/showmessages')">Message Board</button>
+					<button data-on:click="@get('/showchat')">Live Chat</button>
+				</div>
+			</div>
+		</section>
+	}
 }
 
-templ Layout() {
+templ ChatContent() {
+	@Base() {
+		<section id="main">
+			@chat.ChatBox()
+		</section>
+	}
+}
+
+templ MessageBoardContent() {
+	@Base() {
+		<section id="main">
+			@comments.MessageBoard(nil)
+		</section>
+	}
+}
+
+templ Landing() {
 	@Base() {
 		<section id="main">
 			@UserJoin()
