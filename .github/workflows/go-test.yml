@@ -18,7 +18,12 @@ jobs:
       - name: Run templ generate
         shell: bash
         run: templ generate -path .
-
+      - name: Install sqlc
+        shell: bash
+        run: go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+      - name: Run sqlc generate
+        shell: bash
+        run: sqlc generate
       - name: Build
         run: go build -v ./...
       - name: Test with the Go CLI
