@@ -17,6 +17,10 @@
 # Go workspace file
 go.work
 tmp/
+node_modules/
+# sqlc files should always be generated and should never be checked in to source control.
+# Source of truth is the queries files.
+internal/db/
 
 # IDE specific files
 .vscode
