@@ -9,8 +9,6 @@ import (
 	"github.com/starfederation/datastar-go/datastar"
 )
 
-const maincontent = "main"
-
 func RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /showchat", showchat)
 	mux.HandleFunc("GET /showmessages", showmessages)

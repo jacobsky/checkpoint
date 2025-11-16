@@ -23,9 +23,7 @@ templ Base() {
 				@Nav()
 			</header>
 			<main class="flex flex-wrap justify-center bg-base-100 ">
-				<div class="max-w-6xl" id="content">
-					{ children... }
-				</div>
+				{ children... }
 			</main>
 			@Footer()
 		</body>
@@ -80,21 +78,22 @@ templ Footer() {
 }
 
 templ UserJoin() {
-	<p>Tell us your name, come and take a seat and chat</p>
-	<div role="group">
+	<p class="text-xl">Tell us your name, come and take a seat and chat</p>
+	<div class="join w-full">
 		<input
+			class="input btn-primary w-full"
 			type="text"
 			data-bind:nickname
 			data-text="$nickname"
 			data-on:keydown="evt.key === 'Enter' && @get('/join')"
 		/>
-		<button data-on:click="@get('/join')">Join</button>
+		<button class="btn btn-primary" data-on:click="@get('/join')">Join</button>
 	</div>
 }
 
 templ MainContent() {
 	@Base() {
-		<section id="main">
+		<section class="max-w-6xl" id="main">
 			<div class="grid">
 				<div>
 					This is a small space that I made dedicated to one of my favorite pieces of internet culture referred to as

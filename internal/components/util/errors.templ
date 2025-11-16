@@ -1,16 +1,13 @@
 package util
 
 templ ErrorModal() {
-	<dialog data-signals="{show_error: false, error: '', error_details: ''}" data-attr:open="$show_error">
-		<article>
-			<header>
-				<button aria-label="Close" rel="prev" data-on:click="$show_error=false"></button>
-				<p data-text="$error"></p>
+	<dialog class="modal" id="error_modal" data-signals="{show_error: false, error: '', error_details: ''}" data-attr:open="$show_error">
+		<article class="modal-box">
+			<header class="flex my-4">
+				<p class="text-lg font-bold grow" data-text="$error"></p>
+				<button class="btn btn-ghost flex-none" aria-label="close" rel="prev" data-on:click="$show_error=false">X Close </button>
 			</header>
-			<details>
-				<summary>Details</summary>
-				<p data-text="$error_details"></p>
-			</details>
+			<p class="text-lg" data-text="$error_details"></p>
 		</article>
 	</dialog>
 }
