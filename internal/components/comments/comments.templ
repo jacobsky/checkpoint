@@ -1,44 +1,53 @@
 package comments
 
-import sqlc "checkpoint/internal/db"
+import (
+	sqlc "checkpoint/internal/db"
+	"fmt"
+)
 
 templ MessagePost(comment sqlc.Comment) {
-	<article>
-		<p>{ comment.Message } </p>
-		<footer><strong>{ comment.Poster }</strong> was here @ { comment.Postdate.Format("2006-01-02") }</footer>
-	</article>
+	<div class="chat-bubble chat-bubble-primary text-primary-content w-full p-4">
+		{ comment.Message }
+	</div>
+	<div class="chat-footer text-xs opacity-50 mx-4"><strong>{ comment.Poster }</strong> was here @ <time>{ comment.Postdate.Format("2006-01-02") }</time></div>
 }
 
 templ MessagePostGroup(messages []sqlc.Comment) {
 	if messages != nil {
-		for _, msg := range messages {
-			@MessagePost(msg)
+		for i, msg := range messages {
+			{{
+				var side = "start"
+				if i%2 == 1 {
+					side = "end"
+				}
+			}}
+			<div class={ fmt.Sprintf("chat chat-%v bg-base-100 w-full mx-4", side) }>
+				@MessagePost(msg)
+			</div>
 		}
 	}
 }
 
 templ MessageBoard(messages []sqlc.Comment) {
-	<section>
+	<section class="w-full m-8">
 		<header>
-			<div role="group">
-				<h1>Message Wall</h1>
-				<button aria-label="Close" rel="prev" data-on:click="@get('/join')">Return</button>
+			<div class="flex" role="group">
+				<h1 class="text-2xl grow">Message Wall</h1>
+				<button class="btn btn-ghost text-2xl flex-none" aria-label="Close" rel="prev" data-on:click="@get('/join')">Return</button>
 			</div>
 		</header>
-		<div data-init="@get('/messages')" class="grid">
-			<div id="messageboard">
-				@MessagePostGroup(messages)
-			</div>
+		<div class="grid grid-cols-1 gap-4 w-full justify-items-center-safe" data-init="@get('/messages')" id="messageboard">
+			@MessagePostGroup(messages)
 		</div>
-		@SubmitMessage()
 	</section>
+	@SubmitMessage()
 }
 
 templ SubmitMessage() {
-	<section>
-		<div role="group">
-			<input type="text" data-bind:wall_message data-text="$wall_message"/>
-			<button data-on:click="@post('/messages')">Send</button>
+	<section class="w-full m-8">
+		<div class="flex" role="group">
+			<input class="input grow" type="text" data-bind:wall_message data-text="$wall_message"/>
+			<button class="btn btn-primary flex-none" data-on:click="@post('/messages')">Send</button>
 		</div>
 	</section>
 }

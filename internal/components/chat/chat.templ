@@ -3,17 +3,32 @@ package chat
 import "time"
 
 templ ChatMessage(userid, message string, posttime time.Time) {
-	<div role="group">
-		<p><strong>{ userid }: </strong> { message }</p>
-		<p>{ posttime.Format("2006-01-02 15:04:05") }</p>
+	<div class="chat  b-base-100 w-full">
+		<div class="chat-header opacity-50">{ userid }</div>
+		<div class="chat-bubble chat-bubble-primary text-primary-content w-full">
+			{ message }
+		</div>
+		<div class="chat-footer text-xs opacity-50 mx-4"><time>{ posttime.Format("2006-01-02 15:04:05") }</time></div>
 	</div>
+}
+
+templ ChatBoxMessages(messages []Message) {
+	<section class="w-full overflow-auto" id="chatboard" data-init__delay.1s="@get('/chat')" style="height: 500px" class="overflow-auto">
+		if messages != nil {
+			for _, message := range messages {
+				@ChatMessage(message.Nickname, message.Message, message.TimePosted)
+			}
+		} else {
+			<div class="loading loading-spinner loading-xl" aria-busy="true">Loading Messages</div>
+		}
+	</section>
 }
 
 templ ChatBox() {
 	<header>
-		<div role="group">
-			<h1>Ephemeral Chat</h1>
-			<button aria-label="Close" rel="prev" data-on:click="@get('/join')"></button>
+		<div class="flex">
+			<h1 class="text-2x grow">Ephemeral Chat</h1>
+			<button class="btn btn-ghost text-2xl flex-none" aria-label="Close" rel="prev" data-on:click="@get('/join')">Return</button>
 		</div>
 		<p>Stay a while and chat. Only the { maxRetainedMessages } latest messages will be available.</p>
 	</header>
@@ -21,29 +36,15 @@ templ ChatBox() {
 	@SubmitMessage()
 }
 
-templ ChatBoxMessages(messages []Message) {
-	<section id="chatboard" data-init__delay.1s="@get('/chat')" style="height: 500px" class="overflow-auto">
-		if messages != nil {
-			for _, message := range messages {
-				@ChatMessage(message.Nickname, message.Message, message.TimePosted)
-			}
-		} else {
-			<div aria-busy="true">Loading Messages</div>
-		}
-		<div style="overflow-anchor: auto; height: 1px;"></div>
-	</section>
-}
-
 templ SubmitMessage() {
-	<section>
-		<div role="group">
-			<input
-				type="text"
-				data-bind:message
-				data-text="$message"
-				data-on:keydown="evt.key === 'Enter' && @post('/chat')"
-			/>
-			<button data-on:click="@post('/chat')">Send</button>
-		</div>
-	</section>
+	<div class="flex">
+		<input
+			class="input grow"
+			type="text"
+			data-bind:message
+			data-text="$message"
+			data-on:keydown="evt.key === 'Enter' && @post('/chat')"
+		/>
+		<button class="btn btn-primary flex-none" data-on:click="@post('/chat')">Send</button>
+	</div>
 }

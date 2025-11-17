@@ -78,7 +78,7 @@ templ Footer() {
 }
 
 templ UserJoin() {
-	<p class="text-xl">Tell us your name, come and take a seat and chat</p>
+	<p class="text-xl">Welcome! Tell us your name, come and take a seat and chat</p>
 	<div class="join w-full">
 		<input
 			class="input btn-primary w-full"
@@ -94,17 +94,17 @@ templ UserJoin() {
 templ MainContent() {
 	@Base() {
 		<section class="max-w-6xl" id="main">
-			<div class="grid">
-				<div>
+			<div class="grid grid-cols-1 m-8 justify-items-center-safe gap-4">
+				<p class="text-md">
 					This is a small space that I made dedicated to one of my favorite pieces of internet culture referred to as
 					the
 					Internet Checkpoint. If you stumbled your way here, I would greatly appreciate if you would leave a comment
 					or
 					message.
-				</div>
-				<div>
-					<button data-on:click="@get('/showmessages')">Message Board</button>
-					<button data-on:click="@get('/showchat')">Live Chat</button>
+				</p>
+				<div class="grid grid-cols-2 max-w-md justify-items-center-safe gap-4">
+					<button class="btn btn-primary btn-wide w-full" data-on:click="@get('/showmessages')">Message Board</button>
+					<button class="btn btn-primary btn-wide w-full" data-on:click="@get('/showchat')">Live Chat</button>
 				</div>
 			</div>
 		</section>
@@ -113,7 +113,7 @@ templ MainContent() {
 
 templ ChatContent() {
 	@Base() {
-		<section id="main">
+		<section class="w-sm md:lg lg:3xl max-w-6xl flex-1" id="main">
 			@chat.ChatBox()
 		</section>
 	}
@@ -121,7 +121,7 @@ templ ChatContent() {
 
 templ MessageBoardContent() {
 	@Base() {
-		<section id="main">
+		<section class="w-sm md:lg lg:3xl max-w-6xl flex-1" id="main">
 			@comments.MessageBoard(nil)
 		</section>
 	}
@@ -129,7 +129,7 @@ templ MessageBoardContent() {
 
 templ Landing() {
 	@Base() {
-		<section id="main">
+		<section class="max-w-2xl my-8" id="main">
 			@UserJoin()
 		</section>
 		<!-- <audio></audio>-->
