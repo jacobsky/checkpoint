@@ -29,17 +29,15 @@ templ MessagePostGroup(messages []sqlc.Comment) {
 }
 
 templ MessageBoard(messages []sqlc.Comment) {
-	<section class="w-full m-8">
-		<header>
-			<div class="flex" role="group">
-				<h1 class="text-2xl grow">Message Wall</h1>
-				<button class="btn btn-ghost text-2xl flex-none" aria-label="Close" rel="prev" data-on:click="@get('/join')">Return</button>
-			</div>
-		</header>
-		<div class="grid grid-cols-1 gap-4 w-full justify-items-center-safe" data-init="@get('/messages')" id="messageboard">
-			@MessagePostGroup(messages)
+	<header>
+		<div class="flex" role="group">
+			<h1 class="text-2xl grow">Message Wall</h1>
+			<button class="btn btn-ghost text-2xl flex-none" aria-label="Close" rel="prev" data-on:click="@get('/join')">Return</button>
 		</div>
-	</section>
+	</header>
+	<div class="grid grid-cols-1 gap-4 w-full justify-items-center-safe" data-init="@get('/messages')" id="messageboard">
+		@MessagePostGroup(messages)
+	</div>
 	@SubmitMessage()
 }
 

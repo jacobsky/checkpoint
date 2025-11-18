@@ -3,7 +3,7 @@ package chat
 import "time"
 
 templ ChatMessage(userid, message string, posttime time.Time) {
-	<div class="chat  b-base-100 w-full">
+	<div class="chat  b-base-100 w-full" data-init="el.scrollIntoView()">
 		<div class="chat-header opacity-50">{ userid }</div>
 		<div class="chat-bubble chat-bubble-primary text-primary-content w-full">
 			{ message }
