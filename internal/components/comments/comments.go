@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/a-h/templ"
 	"github.com/starfederation/datastar-go/datastar"
 )
 
@@ -36,20 +37,25 @@ func NewHandler(db *sql.DB) *Handler {
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		query_params := r.URL.Query()
-		// Special case because this is the first load.
-		var offset = 0
-		if p := query_params.Get("offset"); p != "" {
-			val, err := strconv.Atoi(p)
-			if err != nil {
-				slog.Error("messages list", "error", err)
+		switch r.Header.Get("Datastar-Request") {
+		case "true":
+			query_params := r.URL.Query()
+			// Special case because this is the first load.
+			var offset = 0
+			if p := query_params.Get("offset"); p != "" {
+				val, err := strconv.Atoi(p)
+				if err != nil {
+					slog.Error("messages list", "error", err)
+				}
+				offset = val
 			}
-			offset = val
-		}
-		if offset == 0 {
-			h.list(w, r)
-		} else {
-			h.load(w, r, offset)
+			if offset == 0 {
+				h.list(w, r)
+			} else {
+				h.load(w, r, offset)
+			}
+		default:
+			templ.Handler(MessageBoardFull()).ServeHTTP(w, r)
 		}
 	case http.MethodPost:
 		h.post(w, r)

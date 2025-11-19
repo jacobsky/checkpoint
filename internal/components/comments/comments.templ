@@ -1,6 +1,7 @@
 package comments
 
 import (
+	"checkpoint/internal/components/layout"
 	sqlc "checkpoint/internal/db"
 	"fmt"
 )
@@ -41,6 +42,13 @@ templ MessageBoard(messages []sqlc.Comment) {
 	<div class="grid grid-cols-1 gap-4 w-full justify-items-center-safe" data-init="@get('/messages')" id="messageboard">
 		@MessagePostGroup(messages)
 	</div>
+}
+
+templ MessageBoardFull() {
+	@layout.Base() {
+		<div data-init="$introcomplete='true'"></div>
+		@MessageBoard(nil)
+	}
 }
 
 templ SubmitMessage() {

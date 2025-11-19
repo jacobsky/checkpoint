@@ -51,28 +51,17 @@ func intro(w http.ResponseWriter, r *http.Request) {
 	}
 	// TODO: Implement a skip intro
 	// Skipping should likely be a second endpoint getting called from the frontend
-
-	err = sse.ExecuteScript(`document.getElementById("mainheader").style.opacity = 1;`)
+	err = sse.PatchSignals([]byte(`{introcomplete: 'true'}`))
 	if err != nil {
 		util.InternalError(sse, w, err)
 	}
 
-	err = sse.ExecuteScript(`document.getElementById("introcontainer").style.opacity=0;`)
-	if err != nil {
-		util.InternalError(sse, w, err)
-	}
-
-	time.Sleep(time.Second * 2)
+	time.Sleep(time.Second * 3)
 	err = sse.PatchElementTempl(LandingFrag())
 	if err != nil {
 		util.InternalError(sse, w, err)
 	}
 
-	time.Sleep(time.Second * 2)
-	err = sse.ExecuteScript(`document.getElementById("mainfooter").style.opacity = 1;`)
-	if err != nil {
-		util.InternalError(sse, w, err)
-	}
 }
 
 func join(w http.ResponseWriter, r *http.Request) {

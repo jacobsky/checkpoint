@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/a-h/templ"
 	"github.com/starfederation/datastar-go/datastar"
 )
 
@@ -82,7 +83,12 @@ func (h *handler) serve() {
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		h.chat(w, r)
+		switch r.Header.Get("Datastar-Request") {
+		case "true":
+			h.chat(w, r)
+		default:
+			templ.Handler(ChatBoxFull()).ServeHTTP(w, r)
+		}
 	case http.MethodPost:
 		h.postMessage(w, r)
 	default:

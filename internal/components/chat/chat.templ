@@ -1,6 +1,9 @@
 package chat
 
-import "time"
+import (
+	"checkpoint/internal/components/layout"
+	"time"
+)
 
 templ ChatMessage(userid, message string, posttime time.Time) {
 	<div class="chat  b-base-100 w-full" data-init="el.scrollIntoView()">
@@ -13,7 +16,7 @@ templ ChatMessage(userid, message string, posttime time.Time) {
 }
 
 templ ChatBoxMessages(messages []Message) {
-	<section class="w-full overflow-auto" id="chatboard" data-init__delay.1s="@get('/chat')" style="height: 500px" class="overflow-auto">
+	<section class="w-full overflow-auto" id="chatboard" data-init__delay.1s="@get('/chat', {openWhenHidden: true})" style="height: 500px" class="overflow-auto">
 		if messages != nil {
 			for _, message := range messages {
 				@ChatMessage(message.Nickname, message.Message, message.TimePosted)
@@ -34,6 +37,13 @@ templ ChatBox() {
 	</header>
 	@ChatBoxMessages(nil)
 	@SubmitMessage()
+}
+
+templ ChatBoxFull() {
+	@layout.Base() {
+		<div data-init="$introcomplete='true'"></div>
+		@ChatBox()
+	}
 }
 
 templ SubmitMessage() {
