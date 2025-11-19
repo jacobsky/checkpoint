@@ -106,6 +106,10 @@ func (h *Handler) post(w http.ResponseWriter, r *http.Request) {
 		util.InternalError(sse, w, err)
 		return
 	}
+	err = sse.PatchSignals([]byte("{message_left: true, show_postmessage: false}"))
+	if err != nil {
+		util.InternalError(sse, w, err)
+	}
 	err = sse.PatchElementTempl(MessagePost(comment), datastar.WithModePrepend(), datastar.WithSelectorID("messageboard"))
 	if err != nil {
 		util.InternalError(sse, w, err)
