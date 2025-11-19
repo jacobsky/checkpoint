@@ -6,28 +6,36 @@ import (
 	"fmt"
 )
 
-templ MessagePost(comment sqlc.Comment) {
-	<div class="chat-bubble chat-bubble-primary text-primary-content w-full p-4">
-		{ comment.Message }
+templ EndOfMessages() {
+	<div class="chat chat-start bg-base-100 w-full mx-4">
+		<div class="chat-bubble chat-bubble-neutral text-neutral-content w-full p-4">
+			You find no more messages on the wall.
+		</div>
 	</div>
-	<div class="chat-footer text-xs opacity-50 mx-4"><strong>{ comment.Poster }</strong> was here @ <time>{ comment.Postdate.Format("2006-01-02") }</time></div>
 }
 
-templ MessagePostGroup(messages []sqlc.Comment) {
-	if messages != nil {
-		for i, msg := range messages {
-			{{
-				var side = "start"
-				if i%2 == 1 {
-					side = "end"
-				}
-				var class = fmt.Sprintf("chat chat-%v bg-base-100 w-full mx-4", side)
-			}}
-			<div class={ class }>
-				@MessagePost(msg)
-			</div>
+templ MessagePost(comment sqlc.Comment) {
+	{{
+		var side = "end"
+		if comment.ID%2 == 0 {
+			side = "start"
 		}
-	}
+		var class = fmt.Sprintf("chat chat-%v bg-base-100 w-full mx-4", side)
+		var request = ""
+		if comment.ID > 0 {
+			request = fmt.Sprintf("@get('/messages?next=%v')", comment.ID-1)
+		}
+	}}
+	<div
+		class={ class }
+		style="animation-name: fadeIn; animation-duration: 1s;"
+		data-on-intersect__once__delay.250ms={ request }
+	>
+		<div class="chat-bubble chat-bubble-primary text-primary-content w-full p-4">
+			{ comment.Message }
+		</div>
+		<div class="chat-footer text-xs opacity-50 mx-4"><strong>{ comment.Poster }</strong> was here @ <time>{ comment.Postdate.Format("2006-01-02") }</time></div>
+	</div>
 }
 
 templ MessageBoard(messages []sqlc.Comment) {
@@ -39,9 +47,7 @@ templ MessageBoard(messages []sqlc.Comment) {
 			<button class="btn btn-ghost text-2xl flex-none" aria-label="Close" rel="prev" data-on:click="@get('/join')">Return</button>
 		</div>
 	</header>
-	<div class="grid grid-cols-1 gap-4 w-full justify-items-center-safe" data-init="@get('/messages')" id="messageboard">
-		@MessagePostGroup(messages)
-	</div>
+	<div class="grid grid-cols-1 gap-4 w-full justify-items-center-safe" data-init__delay.500ms="@get('/messages')" id="messageboard"></div>
 }
 
 templ MessageBoardFull() {

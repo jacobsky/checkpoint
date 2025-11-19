@@ -14,7 +14,6 @@ import (
 )
 
 const (
-	scrollByLimit    = 10
 	minMessageLength = 8
 )
 
@@ -40,19 +39,17 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		switch r.Header.Get("Datastar-Request") {
 		case "true":
 			query_params := r.URL.Query()
-			// Special case because this is the first load.
-			var offset = 0
-			if p := query_params.Get("offset"); p != "" {
-				val, err := strconv.Atoi(p)
+			// Special case because this is the first load. We need to find the latest comment to view.
+			next := query_params.Get("next")
+			// If this is the first load, we will use the first functionality to get the first message
+			if next == "" {
+				h.first(w, r)
+			} else {
+				id, err := strconv.Atoi(next)
 				if err != nil {
 					slog.Error("messages list", "error", err)
 				}
-				offset = val
-			}
-			if offset == 0 {
-				h.list(w, r)
-			} else {
-				h.load(w, r, offset)
+				h.load(w, r, int64(id))
 			}
 		default:
 			templ.Handler(MessageBoardFull()).ServeHTTP(w, r)
@@ -64,12 +61,12 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) list(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) first(w http.ResponseWriter, r *http.Request) {
 	slog.Info("load")
 	sse := datastar.NewSSE(w, r)
 	offset := 0
 	sqlcParams := sqlc.GetRecentCommentsParams{
-		Limit:  scrollByLimit,
+		Limit:  1,
 		Offset: int64(offset),
 	}
 	comments, err := h.queries.GetRecentComments(r.Context(), sqlcParams)
@@ -78,16 +75,31 @@ func (h *Handler) list(w http.ResponseWriter, r *http.Request) {
 		util.InternalError(sse, w, err)
 		return
 	}
-	err = sse.PatchElementTempl(MessagePostGroup(comments), datastar.WithModeAppend(), datastar.WithSelectorID("messageboard"))
+	err = sse.PatchElementTempl(MessagePost(comments[0]), datastar.WithModeAppend(), datastar.WithSelectorID("messageboard"))
 	if err != nil {
 		util.InternalError(sse, w, err)
 		return
 	}
 }
 
-func (h *Handler) load(w http.ResponseWriter, r *http.Request, offset int) {
-	slog.Error("Load handler not implemented yet. This is a bug")
-	http.Error(w, "Not implemented", http.StatusNotImplemented)
+func (h *Handler) load(w http.ResponseWriter, r *http.Request, id int64) {
+	slog.Info("load")
+	sse := datastar.NewSSE(w, r)
+	comment, err := h.queries.GetCommentByID(r.Context(), id)
+	slog.Info("load", "comment", comment)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			sse.PatchElementTempl(EndOfMessages(), datastar.WithModeAppend(), datastar.WithSelectorID("messageboard"))
+			return
+		}
+		util.InternalError(sse, w, err)
+		return
+	}
+	err = sse.PatchElementTempl(MessagePost(comment), datastar.WithModeAppend(), datastar.WithSelectorID("messageboard"))
+	if err != nil {
+		util.InternalError(sse, w, err)
+		return
+	}
 }
 
 func (h *Handler) post(w http.ResponseWriter, r *http.Request) {
