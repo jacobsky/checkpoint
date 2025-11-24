@@ -4,21 +4,52 @@ import (
 	"checkpoint/internal/components/chat"
 	"checkpoint/internal/components/comments"
 	"checkpoint/internal/components/layout"
+	"fmt"
 )
+
+templ Select(signal, descriptor string, options []string) {
+	<select class="select" data-on:change={ fmt.Sprintf("%v=el.value", signal) }>
+		<option disabled selected>{  }</option>
+		for _, value := range options {
+			<option value={ value }>{ value }</option>
+		}
+	</select>
+}
 
 templ UserJoin() {
 	<p class="text-2xl">Welcome!</p>
 	<p class="text-xl">How should we call you?</p>
 	<div class="join w-full">
-		// TODO: Make a name picker instead of typing it out
-		<input
-			class="input btn-primary w-full"
-			type="text"
+		@Select(
+			"$name_adj",
+			"Adjective",
+			[]string{
+				"Joyful",
+				"Drifting",
+				"Yawning",
+				"Relaxing",
+				"Drousey",
+			})
+		@Select(
+			"$name_profession",
+			"Profession",
+			[]string{
+				"Minstril",
+				"Artisan",
+				"Storyteller",
+				"Educator",
+				"Adventurer",
+				"Builder",
+				"Chef",
+				"Wanderer",
+			})
+		<button
 			data-bind:nickname
-			data-text="$nickname"
-			data-on:keydown="evt.key === 'Enter' && @get('/join')"
-		/>
-		<button class="btn btn-primary" data-on:click="@get('/join')">Join</button>
+			data-effect="$nickname = $name_adj.concat(' ', $name_profession)"
+			class="btn btn-primary"
+			data-on:click="@get('/join')"
+			data-attr:disabled="$name_adj == '' || $name_profession == ''"
+		>Join</button>
 	</div>
 }
 

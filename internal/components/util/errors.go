@@ -27,9 +27,16 @@ func BadRequest(sse *datastar.ServerSentEventGenerator, w http.ResponseWriter, e
 func SignalErrorToPatch(sse *datastar.ServerSentEventGenerator, w http.ResponseWriter, code int, err error) {
 	// No need to do this here if nil
 	if err == nil {
-		slog.Warn("Incorrect usage of this function")
+		slog.Error("Incorrect usage of this function")
 		return
 	}
+
+	err = sse.ConsoleError(err)
+	if err != nil {
+		slog.Error("datastar error", "error", err)
+		http.Error(w, "an internal framework error has occured, please refer to the server logs to troubleshoot", http.StatusInternalServerError)
+	}
+
 	err = sse.MarshalAndPatchSignals(dsSignals{
 		ShowError:    true,
 		Error:        http.StatusText(code),
@@ -37,6 +44,6 @@ func SignalErrorToPatch(sse *datastar.ServerSentEventGenerator, w http.ResponseW
 	})
 	if err != nil {
 		slog.Error("datastar error", "error", err)
-		http.Error(w, "an internal error has occured, please refer to the server logs to troubleshoot", http.StatusInternalServerError)
+		http.Error(w, "an internal framework error has occured, please refer to the server logs to troubleshoot", http.StatusInternalServerError)
 	}
 }
