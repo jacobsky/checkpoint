@@ -7,7 +7,7 @@ import (
 )
 
 templ EndOfMessages() {
-	<div class="chat chat-start bg-base-100 w-full mx-4">
+	<div class="chat bg-base-100 w-full mx-4">
 		<div class="chat-bubble chat-bubble-neutral text-neutral-content w-full p-4">
 			You find no more messages on the wall.
 		</div>
@@ -20,7 +20,7 @@ templ MessagePost(comment sqlc.Comment) {
 		if comment.ID%2 == 0 {
 			side = "start"
 		}
-		var class = fmt.Sprintf("chat chat-%v bg-base-100 w-full mx-4", side)
+		var class = fmt.Sprintf("chat chat-%v bg-base-100 m-4", side)
 		var request = ""
 		if comment.ID > 0 {
 			request = fmt.Sprintf("@get('/messages?next=%v')", comment.ID-1)
@@ -31,10 +31,10 @@ templ MessagePost(comment sqlc.Comment) {
 		style="animation-name: fadeIn; animation-duration: 1s;"
 		data-on-intersect__once__delay.250ms={ request }
 	>
-		<div class="chat-bubble chat-bubble-primary text-primary-content w-full p-4">
+		<div class="chat-bubble chat-bubble-primary text-primary-content">
 			{ comment.Message }
 		</div>
-		<div class="chat-footer text-xs opacity-50 mx-4"><strong>{ comment.Poster }</strong> was here @ <time>{ comment.Postdate.Format("2006-01-02") }</time></div>
+		<div class="chat-footer text-xs opacity-50"><strong>{ comment.Poster }</strong> was here @ <time>{ comment.Postdate.Format("2006-01-02") }</time></div>
 	</div>
 }
 
@@ -47,7 +47,7 @@ templ MessageBoard(messages []sqlc.Comment) {
 			<button class="btn btn-ghost text-2xl flex-none" aria-label="Close" rel="prev" data-on:click="@get('/join')">Return</button>
 		</div>
 	</header>
-	<div class="grid grid-cols-1 gap-4 w-full justify-items-center-safe" data-init__delay.500ms="@get('/messages')" id="messageboard"></div>
+	<div class="w-full" data-init__delay.500ms="@get('/messages')" id="messageboard"></div>
 }
 
 templ MessageBoardFull() {
@@ -70,9 +70,11 @@ templ SubmitMessage() {
 				<h3 class="text-xl font-bold grow">Post Message</h3>
 				<button class="btn btn-ghost flex-none" data-on:click="$show_postmessage=false">Close </button>
 			</header>
-			<textarea class="textarea grow" type="text" placeholder="Please leave a message" data-bind:wall_message data-text="$wall_message"></textarea>
-			<div class="modal-action">
-				<button class="btn btn-primary flex-none" data-on:click="@post('/messages')">Leave your Mark</button>
+			<div class="flex">
+				<textarea class="textarea grow" type="text" placeholder="Please leave a message" data-bind:wall_message data-text="$wall_message"></textarea>
+				<div class="modal-action">
+					<button class="btn btn-primary flex-none" data-on:click="@post('/messages')">Leave your Mark</button>
+				</div>
 			</div>
 		</section>
 	</dialog>
