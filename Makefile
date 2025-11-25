@@ -28,8 +28,7 @@ tailwind-install:
 	@npm install
 
 install-migrate:
-	@if [ ! -f migrate ]; then curl -L https://github.com/golang-migrate/migrate/releases/download/v4.19.0/migrate.linux-amd64.tar.gz | tar xvz migrate; fi
-	@chmod +x migrate
+	@if [ ! -f migrate ]; then go install -tags 'sqlite' github.com/golang-migrate/migrate/v4/cmd/migrate@latest ; fi
 
 build: tailwind-install templ-install install-migrate
 	@echo "Building..."
@@ -40,7 +39,6 @@ build: tailwind-install templ-install install-migrate
 
 # Run the application
 run:
-	@migrate -source $(DB_MIGRATIONS_FILE) -database sqlite3://$(DB_ADDRESS) goto $(DB_MIGRATION_VERSION)
 	@go run cmd/api/main.go
 # Create DB container
 docker-run:

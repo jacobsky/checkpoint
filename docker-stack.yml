@@ -17,9 +17,13 @@ services:
     environment:
       APP_ENV: ${APP_ENV}
       PORT: ${PORT}
-      DB_ADDRESS: checkpoint.db
+      DB_ADDRESS: /db/checkpoint.db
       DB_MIGRATION_VERSION: 1
     volumes:
-      - checkpoint_db:/app
+      - checkpoint_db:/db
 volumes:
   checkpoint_db:
+
+networks:
+  services_traefik_proxy:
+    external: true

@@ -2,15 +2,25 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"checkpoint/internal/server"
+
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/sqlite3"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	_ "github.com/joho/godotenv/autoload"
+	_ "modernc.org/sqlite"
 )
+
+const DB_MIGRATION_VERSION uint = 1
 
 func gracefulShutdown(apiServer *http.Server, done chan bool) {
 	// Create context that listens for the interrupt signal from the OS.
@@ -37,7 +47,32 @@ func gracefulShutdown(apiServer *http.Server, done chan bool) {
 	done <- true
 }
 
+func migrateDb() {
+
+	db, err := sql.Open("sqlite", os.Getenv("DB_ADDRESS"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	driver, err := sqlite3.WithInstance(db, &sqlite3.Config{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	m, err := migrate.NewWithDatabaseInstance("file://migrations", "sqlite3", driver)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := m.Migrate(DB_MIGRATION_VERSION); err != nil && err != migrate.ErrNoChange {
+		log.Fatal(err)
+	}
+}
+
 func main() {
+
+	migrateDb()
 
 	server := server.NewServer()
 
