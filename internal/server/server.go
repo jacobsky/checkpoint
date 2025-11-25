@@ -18,11 +18,20 @@ type Server struct {
 }
 
 func NewServer() *http.Server {
-	port, _ := strconv.Atoi(os.Getenv("PORT"))
-	conn, err := sql.Open(os.Getenv("DB_TYPE"), os.Getenv("DB_ADDRESS"))
+	port, err := strconv.Atoi(os.Getenv("PORT"))
+	if err != nil {
+		log.Panicf("PORT environment variable not read: %v", err)
+	}
+	db_address := os.Getenv("DB_ADDRESS")
+	if db_address == "" {
+		log.Panicf("DB Address not set")
+	}
+
+	conn, err := sql.Open("sqlite", os.Getenv("DB_ADDRESS"))
 	if err != nil {
 		log.Panicf("Database could not be opened %v", err)
 	}
+
 	NewServer := &Server{
 		port: port,
 		db:   conn,

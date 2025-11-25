@@ -24,6 +24,8 @@ internal/server/assets/css/output.css
 # sqlc files should always be generated and should never be checked in to source control.
 # Source of truth is the queries files.
 internal/db/
+# ignore this binary
+migrate
 
 # local sqlite databases
 *.db

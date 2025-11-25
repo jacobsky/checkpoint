@@ -1,5 +1,9 @@
 # Simple Makefile for a Go project
-
+# Export the environment variables for use by this
+ifneq (,$(wildcard ./.env))
+    include .env
+    export
+endif
 # Build the application
 all: build test
 templ-install:
@@ -18,12 +22,16 @@ templ-install:
 	fi
 
 tailwind-install:
-	@if [ ! -f tailwindcss ]; then curl -sL https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-linux-x64 -o tailwindcss; fi
+	@if [ ! -f tailwindcss ]; then curl -sL https://github.com/tailwindlabs/tailwindcss/releases/download/v4.1.17/tailwindcss-linux-x64-musl -o tailwindcss; fi
 	
 	@chmod +x tailwindcss
 	@npm install
 
-build: tailwind-install templ-install
+install-migrate:
+	@if [ ! -f migrate ]; then curl -L https://github.com/golang-migrate/migrate/releases/download/v4.19.0/migrate.linux-amd64.tar.gz | tar xvz migrate; fi
+	@chmod +x migrate
+
+build: tailwind-install templ-install install-migrate
 	@echo "Building..."
 	@templ generate
 	@sqlc generate
@@ -32,7 +40,7 @@ build: tailwind-install templ-install
 
 # Run the application
 run:
-	@migrate -source file://migrations -database sqlite3://checkpoint.db up
+	@migrate -source $(DB_MIGRATIONS_FILE) -database sqlite3://$(DB_ADDRESS) goto $(DB_MIGRATION_VERSION)
 	@go run cmd/api/main.go
 # Create DB container
 docker-run:
