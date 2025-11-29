@@ -6,6 +6,7 @@ import (
 	"checkpoint/internal/components"
 	"checkpoint/internal/components/chat"
 	"checkpoint/internal/components/comments"
+	"checkpoint/internal/components/health"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
@@ -13,7 +14,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	// Register routes
 	// TODO add in health check
-	// mux.HandleFunc("/health", s.healthHandler)
+	health := health.NewHandler()
+	mux.Handle("/healthcheck", health)
 	components.RegisterRoutes(mux)
 	chat.RegisterRoutes(mux)
 	mux.Handle("/messages", comments.NewHandler(s.db))
